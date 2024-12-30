@@ -1,0 +1,23 @@
+meta {
+  name: User Info
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{apiUrl}}/auth/user-info
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+      "email": "moksha@mailinator.com",
+      "password": "password",
+      "fullName": "Moksha Icarus"
+  }
+}

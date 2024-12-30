@@ -1,0 +1,32 @@
+{
+  "name": "express-sql-api-boilerplate",
+  "version": "1.0.0",
+  "description": "Express + SQL API boilerplate",
+  "type": "module",
+  "main": "app/index.js",
+  "scripts": {
+    "start": "node app",
+    "dev": "nodemon | pino-pretty"
+  },
+  "keywords": [],
+  "author": "aktsbot",
+  "license": "ISC",
+  "dependencies": {
+    "argon2": "^0.31.2",
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.7",
+    "pino": "^8.16.2",
+    "pino-http": "^8.5.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "pino-pretty": "^10.2.3",
+    "prettier": "^3.1.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Express-SQL-API-Boilerplate",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

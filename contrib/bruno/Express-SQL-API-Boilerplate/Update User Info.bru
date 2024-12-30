@@ -1,0 +1,22 @@
+meta {
+  name: Update User Info
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{apiUrl}}/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+      "email": "james@mailinator.com",
+      "fullName": "Jamie John Icarus"
+  }
+}
