@@ -13,7 +13,7 @@ const queryDebugger = () => {
 
 const db = new sqlite(path.resolve(config.dbPath), {
   fileMustExist: true,
-  verbose: queryDebugger,
+  verbose: queryDebugger(),
 });
 
 const query = (sql, params = []) => {
