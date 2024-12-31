@@ -1,14 +1,16 @@
 import logger from "../logger.js";
 
 import { makeToken, verifyJWT } from "../jwt.js";
+import { getUuid, isPasswordMatching } from "../utils.js";
 import { sendForgotPasswordEmail } from "../email.js";
 
 // TODO:
 // import User from "../models/user.model.js";
 // import Session from "../models/session.model.js";
-const Session = null;
+// const Session = null;
 // const User = null;
 import User from "../db/user.js";
+import Session from "../db/session.js";
 
 export const signupUser = async (req, res, next) => {
   try {
@@ -25,7 +27,7 @@ export const signupUser = async (req, res, next) => {
     // sqlite3 does not return inserted or updated rows
     // so we run two queries
     await User.createUser({ ...body });
-    const user = User.findUserByEmail({
+    const user = await User.findUserByEmail({
       email: body.email,
       attributes: ["uuid", "email"],
     });
@@ -46,10 +48,10 @@ export const loginUser = async (req, res, next) => {
     const errorMessage = "Invalid email or password";
 
     const { body } = req.xop;
-    const userPresent = await User.findOne(
-      { email: body.email },
-      { _id: 1, password: 1, email: 1, fullName: 1 }
-    );
+    const userPresent = await User.findUserByEmail({
+      email: body.email,
+      attributes: ["uuid", "password", "email", "full_name", "status"],
+    });
 
     if (!userPresent) {
       return next({
@@ -58,7 +60,10 @@ export const loginUser = async (req, res, next) => {
       });
     }
 
-    const isPasswordValid = await userPresent.isValidPassword(body.password);
+    const isPasswordValid = await isPasswordMatching({
+      password: body.password,
+      passwordHash: userPresent.password,
+    });
 
     logger.debug(`password valid ${isPasswordValid}`);
 
@@ -69,14 +74,25 @@ export const loginUser = async (req, res, next) => {
       });
     }
 
-    const session = await new Session({
-      user: userPresent._id,
-      isValid: true,
-    }).save();
+    if (userPresent.status !== "active") {
+      return next({
+        status: 401,
+        message: "User is not active",
+      });
+    }
+
+    const sessionPayload = {
+      user: userPresent.uuid,
+      is_valid: 1,
+      uuid: getUuid(),
+    };
+    await Session.createSessionForUser({
+      ...sessionPayload,
+    });
 
     // token - {session: 'uuid'}
     const tokenPayload = {
-      session: session.uuid,
+      session: sessionPayload.uuid,
     };
 
     const accessToken = makeToken({

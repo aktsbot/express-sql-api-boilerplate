@@ -6,3 +6,7 @@ export const getUuid = () => uuidv4();
 export const getPasswordHash = ({ password }) => {
   return argon2.hash(password);
 };
+
+export const isPasswordMatching = ({ password, passwordHash }) => {
+  return argon2.verify(passwordHash, password);
+};

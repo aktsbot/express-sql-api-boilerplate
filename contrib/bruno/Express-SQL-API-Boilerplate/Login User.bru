@@ -5,22 +5,21 @@ meta {
 }
 
 post {
-  url: {{apiUrl}}/auth/login
+  url: {{apiUrl}}/api/auth/login
   body: json
   auth: none
 }
 
 body:json {
   {
-      "email": "james@mailinator.com",
-      "password": "Pass1234#"
+      "email": "john@mailinator.com",
+      "password": "password"
   }
 }
 
-tests {
-  var res = pm.response.json();
+script:post-response {
   
-  bru.setVar('accessToken', res.accessToken);
-  bru.setVar('refreshToken', res.refreshToken);
+  bru.setVar('accessToken', res.body.accessToken);
+  bru.setVar('refreshToken', res.body.refreshToken);
   
 }

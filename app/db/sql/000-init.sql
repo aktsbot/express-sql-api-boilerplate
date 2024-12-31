@@ -13,6 +13,7 @@ CREATE TABLE users (
 CREATE TABLE sessions (
   uuid varchar(100) PRIMARY KEY,
   user varchar(100),
+  is_valid INTEGER DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
