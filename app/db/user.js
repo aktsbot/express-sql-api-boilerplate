@@ -26,7 +26,6 @@ const createUser = async ({ email, fullName, password }) => {
       uuid: getUuid(),
       email,
       fullName,
-      // status: "active",
       password: hashedPassword,
     }
   );
