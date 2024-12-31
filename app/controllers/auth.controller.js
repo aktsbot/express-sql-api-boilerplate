@@ -7,12 +7,13 @@ import { sendForgotPasswordEmail } from "../email.js";
 // import User from "../models/user.model.js";
 // import Session from "../models/session.model.js";
 const Session = null;
-const User = null;
+// const User = null;
+import User from "../db/user.js";
 
 export const signupUser = async (req, res, next) => {
   try {
     const { body } = req.xop;
-    const userPresent = await User.findOne({ email: body.email }, { _id: 1 });
+    const userPresent = await User.findUserByEmail({ email: body.email });
 
     if (userPresent) {
       return next({
@@ -21,7 +22,13 @@ export const signupUser = async (req, res, next) => {
       });
     }
 
-    const user = await new User({ ...body }).save();
+    // sqlite3 does not return inserted or updated rows
+    // so we run two queries
+    await User.createUser({ ...body });
+    const user = User.findUserByEmail({
+      email: body.email,
+      attributes: ["uuid", "email"],
+    });
 
     return res.json({
       user: {

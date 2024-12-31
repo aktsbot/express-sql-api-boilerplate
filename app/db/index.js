@@ -4,7 +4,17 @@ import path from "path";
 import config from "../config.js";
 import logger from "../logger.js";
 
-const db = new sqlite(path.resolve(config.dbPath), { fileMustExist: true });
+const queryDebugger = () => {
+  if (config.env === "development") {
+    return console.log;
+  }
+  return null;
+};
+
+const db = new sqlite(path.resolve(config.dbPath), {
+  fileMustExist: true,
+  verbose: queryDebugger,
+});
 
 const query = (sql, params = []) => {
   return db.prepare(sql).all(params);

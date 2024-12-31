@@ -3,7 +3,7 @@ CREATE TABLE users (
   full_name varchar(500) NOT NULL,
   email varchar(500) NOT NULL UNIQUE,
   password TEXT NOT NULL,
-  status varchar(50) NOT NULL, -- active / inactive
+  status varchar(50) NOT NULL DEFAULT ('active'), -- active / inactive
   password_reset_code varchar(100),
   password_reset_expiry DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
