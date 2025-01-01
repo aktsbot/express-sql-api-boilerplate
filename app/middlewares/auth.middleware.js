@@ -1,8 +1,7 @@
 import { verifyJWT } from "../jwt.js";
 import logger from "../logger.js";
-// TODO:
-// import Session from "../models/session.model.js";
-const Session = null;
+
+import Session from "../db/session.js";
 
 export const deserializeUser = (req, res, next) => {
   const accessToken = (req.headers.authorization || "").replace(
@@ -49,21 +48,23 @@ export const requireUser = async (req, res, next) => {
   }
 
   try {
-    const sessionInfo = await Session.findOne({
-      uuid: session.session,
-      isValid: true,
-    })
-      .populate("user", "email fullName uuid")
-      .lean();
+    const sessionInfo = await Session.findUserForValidSession({
+      session_uuid: session.session,
+    });
 
     if (!sessionInfo) {
       return next({
         status: 403,
-        message: "Session has expired or is no longer valid",
+        message:
+          "Session has expired or is no longer valid or user might not be active",
       });
     }
 
-    res.locals.user = sessionInfo.user;
+    res.locals.user = {
+      uuid: sessionInfo.user_uuid,
+      full_name: sessionInfo.user_full_name,
+      email: sessionInfo.user_email,
+    };
 
     return next();
   } catch (error) {

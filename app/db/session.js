@@ -16,7 +16,27 @@ const createSessionForUser = ({ user, is_valid, uuid }) => {
   );
 };
 
+const findUserForValidSession = ({ session_uuid }) => {
+  return db.get(
+    `SELECT
+    u.uuid as user_uuid,
+    u.full_name as user_full_name,
+    u.email as user_email
+  FROM
+    sessions s
+  INNER JOIN users u on
+    s.user = u.uuid
+  WHERE
+    s.uuid = ?
+    AND s.is_valid = 1
+    AND u.status = 'active';
+  `,
+    [session_uuid]
+  );
+};
+
 export default {
   deleteSessionsForUser,
   createSessionForUser,
+  findUserForValidSession,
 };
