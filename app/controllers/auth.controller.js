@@ -86,7 +86,7 @@ export const loginUser = async (req, res, next) => {
       is_valid: 1,
       uuid: getUuid(),
     };
-    await Session.createSessionForUser({
+    Session.createSessionForUser({
       ...sessionPayload,
     });
 
@@ -149,29 +149,33 @@ export const makeNewTokens = async (req, res, next) => {
       });
     }
 
-    const sessionInfo = await Session.findOne({
-      uuid: decoded.session,
-      isValid: true,
-    }).populate("user", "email fullName uuid _id");
+    const sessionInfo = await Session.findUserForValidSession({
+      session_uuid: decoded.session,
+    });
 
     if (!sessionInfo) {
       return next({
         status: 403,
-        message: "Session has expired or is no longer valid",
+        message:
+          "Session has expired or is no longer valid or user is not active",
       });
     }
 
-    sessionInfo.isValid = false;
-    await sessionInfo.save();
+    // remove old sessions
+    Session.deleteSessionsForUser({ user_uuid: sessionInfo.user_uuid });
 
-    const session = await new Session({
-      user: sessionInfo.user._id,
-      isValid: true,
-    }).save();
+    const sessionPayload = {
+      user: sessionInfo.user_uuid,
+      is_valid: 1,
+      uuid: getUuid(),
+    };
+    Session.createSessionForUser({
+      ...sessionPayload,
+    });
 
     // token - {session: 'uuid'}
     const tokenPayload = {
-      session: session.uuid,
+      session: sessionPayload.uuid,
     };
 
     const newAccessToken = makeToken({
