@@ -1,7 +1,7 @@
 import logger from "../logger.js";
 
 import { makeToken, verifyJWT } from "../jwt.js";
-import { getUuid, isPasswordMatching } from "../utils.js";
+import { getUuid, isPasswordMatching, isResetValid } from "../utils.js";
 import { sendForgotPasswordEmail } from "../email.js";
 
 // TODO:
@@ -282,8 +282,9 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { body } = req.xop;
 
-    const userFound = await User.findOne({
+    const userFound = await User.findUserByUuid({
       uuid: body.userId,
+      attributes: ["uuid", "password_reset_code", "password_reset_expiry"],
     });
 
     if (!userFound) {
@@ -294,16 +295,30 @@ export const resetPassword = async (req, res, next) => {
     }
 
     // check if code has expired?
-    if (!userFound.isResetCodeValid(body.resetCode)) {
+    if (
+      !isResetValid({
+        password_reset_code: userFound.password_reset_code,
+        password_reset_expiry: userFound.password_reset_expiry,
+        input_code: body.resetCode,
+      })
+    ) {
       return next({
         status: 400,
         message: "Password reset token is invalid or has been expired.",
       });
     }
 
-    userFound.password = body.password;
-    userFound.clearReset();
-    await userFound.save();
+    User.updateUserPassword({
+      user_uuid: userFound.uuid,
+      password: body.password,
+    });
+    User.setResetForUser({
+      user_uuid: userFound.uuid,
+      payload: {
+        password_reset_code: "",
+        password_reset_expiry: "",
+      },
+    });
 
     return res.send({
       message: "Password updated successfully",
