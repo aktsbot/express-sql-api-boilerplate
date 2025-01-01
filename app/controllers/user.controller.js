@@ -1,10 +1,8 @@
 import logger from "../logger.js";
 
 // TODO:
-// import User from "../models/user.model.js";
-// import Session from "../models/session.model.js";
-const Session = null;
-const User = null;
+import User from "../db/user.js";
+import Session from "../db/session.js";
 
 export const updateUserInfo = async (req, res, next) => {
   try {
@@ -16,33 +14,32 @@ export const updateUserInfo = async (req, res, next) => {
     // is email available?
     let messageCode = "";
     if (body.email) {
-      const userPresentWithEmail = await User.findOne({
+      const userPresentWithEmail = await User.isEmailUsedByAnotherUser({
         email: body.email,
-        _id: {
-          $ne: user._id,
-        },
+        except_user_uuid: user.uuid,
       });
 
-      if (userPresentWithEmail) {
+      logger.debug("email used? ");
+      logger.debug(userPresentWithEmail);
+
+      if (userPresentWithEmail.email_used) {
         return next({
           status: 400,
           message: `Email ${body.email} is already in use`,
         });
       }
 
-      await Session.deleteMany({
-        user: user._id,
+      Session.deleteSessionsForUser({
+        user_uuid: user.uuid,
       });
 
       messageCode = "RE_LOGIN";
     }
 
-    const userUpdate = await User.findByIdAndUpdate(user._id, body, {
-      new: true,
-    });
+    await User.updateUser({ user_uuid: user.uuid, payload: body });
 
     return res.json({
-      user: { uuid: userUpdate.uuid },
+      user: { uuid: user.uuid },
       messageCode,
     });
   } catch (error) {

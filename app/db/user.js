@@ -35,6 +35,13 @@ const findUserByUuid = ({ uuid, attributes = [] }) => {
   );
 };
 
+const isEmailUsedByAnotherUser = ({ email, except_user_uuid }) => {
+  return db.get(
+    `SELECT COUNT(*) as email_used FROM users WHERE email=? AND uuid NOT IN (?)`,
+    [email, except_user_uuid],
+  );
+};
+
 const createUser = async ({ email, fullName, password }) => {
   const hashedPassword = await getPasswordHash({ password });
   return db.run(
@@ -57,9 +64,32 @@ const updateUserPassword = async ({ user_uuid, password }) => {
   });
 };
 
+const updateUser = async ({ user_uuid, payload }) => {
+  const { email, full_name } = payload;
+  let sets = [];
+  let params = {};
+
+  if (email) {
+    sets.push("email=@email");
+    params["email"] = email;
+  }
+
+  if (full_name) {
+    sets.push("full_name=@full_name");
+    params["full_name"] = full_name;
+  }
+
+  return db.run(`UPDATE users SET ${sets.join(",")} WHERE uuid=@uuid`, {
+    uuid: user_uuid,
+    ...params,
+  });
+};
+
 export default {
   findUserByEmail,
   findUserByUuid,
+  isEmailUsedByAnotherUser,
   createUser,
   updateUserPassword,
+  updateUser,
 };
