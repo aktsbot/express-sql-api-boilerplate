@@ -85,6 +85,16 @@ const updateUser = async ({ user_uuid, payload }) => {
   });
 };
 
+const setResetForUser = ({ user_uuid, payload }) => {
+  return db.run(
+    `UPDATE users SET password_reset_code=@password_reset_code, password_reset_expiry=@password_reset_expiry WHERE uuid=@uuid`,
+    {
+      uuid: user_uuid,
+      ...payload,
+    },
+  );
+};
+
 export default {
   findUserByEmail,
   findUserByUuid,
@@ -92,4 +102,5 @@ export default {
   createUser,
   updateUserPassword,
   updateUser,
+  setResetForUser,
 };

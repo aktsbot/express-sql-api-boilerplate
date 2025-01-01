@@ -242,7 +242,7 @@ export const forgotPassword = async (req, res, next) => {
     const message =
       "If the email address exists in our system, it should be getting an email shortly.";
     const { body } = req.xop;
-    const userPresent = await User.findOne({ email: body.email });
+    const userPresent = await User.findUserByEmail({ email: body.email });
 
     if (!userPresent) {
       return next({
@@ -251,21 +251,27 @@ export const forgotPassword = async (req, res, next) => {
       });
     }
 
-    userPresent.generateReset();
+    let now = new Date();
+    let hrs = 2; // 2 hours
 
-    await userPresent.save();
+    const payload = {
+      password_reset_code: getUuid(),
+      password_reset_expiry: now.setTime(now.getTime() + hrs * 60 * 60 * 1000),
+    };
+
+    User.setResetForUser({ user_uuid: userPresent.uuid, payload });
 
     logger.debug(userPresent.uuid);
-    logger.debug(userPresent.passwordReset.code);
 
-    // TODO: send email
     await sendForgotPasswordEmail({
       to: body.email,
-      resetCode: userPresent.passwordReset.code,
+      resetCode: payload.password_reset_code,
       userId: userPresent.uuid,
     });
     return res.send({
       message,
+      errors: [],
+      messageCode: "",
     });
   } catch (error) {
     next(error);
