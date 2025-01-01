@@ -1,5 +1,10 @@
 # Express + SQL API boilerplate
 
+## Note:
+
+Plain SQL queries are used in the repo. This is unmaintainable on the long run.
+Ditching for sequelize implementation in `main` branch.
+
 To start development, you'd need sqlite3 installed in your machine.
 
 ```
@@ -22,9 +27,5 @@ $ nvm use
 $ npm i
 $ npm run dev
 ```
-
-## TODO
-
-- Make a postgres version with https://github.com/porsager/postgres
 
 **Happy Hacking!**
