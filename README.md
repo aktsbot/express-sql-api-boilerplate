@@ -5,6 +5,8 @@
 Plain SQL queries are used in the repo. This is unmaintainable on the long run.
 Ditching for sequelize implementation in `main` branch.
 
+## Starting up
+
 To start development, you'd need sqlite3 installed in your machine.
 
 ```
