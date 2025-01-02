@@ -11,7 +11,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const basename = path.basename(__filename);
 
-const db = {};
+const db = {
+  isClosed: false,
+};
 let sequelize = null;
 
 let sequelizeOptions = {
@@ -60,6 +62,7 @@ export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     logger.info("database connection has been established successfully");
+    db.isClosed = false;
   } catch (error) {
     logger.error("unable to connect to the database");
     logger.error(error);
@@ -67,9 +70,14 @@ export const connectDB = async () => {
 };
 
 export const closeDB = async () => {
+  if (db.isClosed) {
+    logger.info("database connection is already closed");
+    return;
+  }
   try {
     await sequelize.close();
     logger.info("database connection has been closed");
+    db.isClosed = true;
   } catch (error) {
     logger.error("unable to close database connection");
     logger.error(error);
