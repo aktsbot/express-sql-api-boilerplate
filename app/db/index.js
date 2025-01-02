@@ -1,8 +1,17 @@
 import { Sequelize } from "sequelize";
+import fs from "fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import config from "../config.js";
 import logger from "../logger.js";
 
+// stuff that used to be in node globals, ugh!
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const basename = path.basename(__filename);
+
+const db = {};
 let sequelize = null;
 
 let sequelizeOptions = {
@@ -28,6 +37,25 @@ if (config.sqlite.dbPath) {
   );
 }
 
+// set up our models
+fs.readdirSync(`${__dirname}/models`)
+  .filter((file) => {
+    return (
+      file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js"
+    );
+  })
+  .forEach(async (file) => {
+    const model = await import(path.join(__dirname, "models", file));
+    db[model.name] = model.default(sequelize, Sequelize.DataTypes);
+  });
+
+// set associations for models
+Object.keys(db).forEach((modelName) => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
+
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
@@ -48,7 +76,7 @@ export const closeDB = async () => {
   }
 };
 
-export default {
-  sequelize,
-  Sequelize,
-};
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+export default db;
