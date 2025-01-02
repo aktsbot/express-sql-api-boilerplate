@@ -6,11 +6,14 @@
   "main": "app/index.js",
   "scripts": {
     "start": "node app",
+    "dev": "nodemon | pino-pretty",
     "pkg:install-postgres": "npm install --save pg pg-hstore",
     "pkg:remove-postgres": "npm uinstall pg pg-hstore",
     "pkg:install-sqlite": "npm install --save sqlite3",
     "pkg:remove-sqlite": "npm uinstall sqlite3",
-    "dev": "nodemon | pino-pretty"
+    "db:migrate:up": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "db:migrate:create": "sequelize migration:create --name "
   },
   "keywords": [],
   "author": "aktsbot",
@@ -32,6 +35,7 @@
   "devDependencies": {
     "nodemon": "^3.0.2",
     "pino-pretty": "^10.2.3",
-    "prettier": "^3.1.0"
+    "prettier": "^3.1.0",
+    "sequelize-cli": "^6.6.2"
   }
 }
