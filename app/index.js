@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
-import db from "./db/index.js";
+import { connectDB, closeDB } from "./db/index.js";
 import config from "./config.js";
 import logger from "./logger.js";
 import httpLogger from "./middlewares/http-logger.middleware.js";
@@ -39,7 +39,7 @@ const server = app.listen(config.port, (err) => {
   }
 
   logger.info(`app started on port ${config.port}`);
-  db.checkDB();
+  connectDB();
 });
 
 // clean up - when server dies, make sure db connection
@@ -47,7 +47,7 @@ const server = app.listen(config.port, (err) => {
 function cleanup() {
   server.close(() => {
     logger.warn("closed out app server");
-    db.closeDB();
+    closeDB();
 
     // process.exit(0);
     setTimeout(() => {

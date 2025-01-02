@@ -11,7 +11,19 @@ const makeCorsOrigins = () => {
 const config = {
   port: process.env.PORT || 3303,
   env: process.env.NODE_ENV || "development",
-  dbPath: process.env.DB_PATH || "myapp.db",
+  // database start ------------
+  sqlite: {
+    dbPath: process.env.SQLITE_DB_PATH,
+  },
+  postgres: {
+    username: process.env.PG_USERNAME,
+    password: process.env.PG_PASSWORD,
+    host: process.env.PG_HOST,
+    port: process.env.PG_PORT,
+    dbname: process.env.PG_DB_NAME,
+  },
+  // database end --------------
+
   corsOrigins: makeCorsOrigins(),
 
   // jwt

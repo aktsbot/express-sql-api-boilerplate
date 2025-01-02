@@ -5,12 +5,10 @@ import { getUuid, isPasswordMatching, isResetValid } from "../utils.js";
 import { sendForgotPasswordEmail } from "../email.js";
 
 // TODO:
-// import User from "../models/user.model.js";
-// import Session from "../models/session.model.js";
-// const Session = null;
-// const User = null;
-import User from "../db/user.js";
-import Session from "../db/session.js";
+const Session = null;
+const User = null;
+// import User from "../db/user.js";
+// import Session from "../db/session.js";
 
 export const signupUser = async (req, res, next) => {
   try {

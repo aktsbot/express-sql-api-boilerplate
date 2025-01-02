@@ -1,7 +1,8 @@
 import { verifyJWT } from "../jwt.js";
 import logger from "../logger.js";
 
-import Session from "../db/session.js";
+// import Session from "../db/session.js";
+const Session = null;
 
 export const deserializeUser = (req, res, next) => {
   const accessToken = (req.headers.authorization || "").replace(

@@ -1,8 +1,10 @@
 import logger from "../logger.js";
 
 // TODO:
-import User from "../db/user.js";
-import Session from "../db/session.js";
+// import User from "../db/user.js";
+// import Session from "../db/session.js";
+const User = null;
+const Session = null;
 
 export const updateUserInfo = async (req, res, next) => {
   try {

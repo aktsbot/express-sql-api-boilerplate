@@ -1,56 +1,43 @@
-import sqlite from "better-sqlite3";
-import path from "path";
+import { Sequelize } from "sequelize";
 
 import config from "../config.js";
 import logger from "../logger.js";
 
-const queryDebugger = () => {
-  if (config.env === "development") {
-    return console.log;
-  }
-  return null;
-};
+let sequelize = null;
 
-const db = new sqlite(path.resolve(config.dbPath), {
-  fileMustExist: true,
-  verbose: queryDebugger(),
-});
+if (config.sqlite.dbPath) {
+  sequelize = new Sequelize({
+    dialect: "sqlite",
+    storage: config.sqlite.dbPath,
+  });
+} else {
+  // postgres
+  sequelize = new Sequelize(
+    `postgres://${config.postgres.username}:${config.postgres.password}@${config.postgres.host}:${config.postgres.port}/${config.postgres.dbname}`
+  );
+}
 
-const query = (sql, params = []) => {
-  return db.prepare(sql).all(params);
-};
-
-const get = (sql, params = []) => {
-  return db.prepare(sql).get(params);
-};
-
-const run = (sql, params) => {
-  return db.prepare(sql).run(params);
-};
-
-const checkDB = () => {
-  logger.info("running test query for db connectivity");
+export const connectDB = async () => {
   try {
-    const resp = get(`SELECT 1+1 as result`, []);
-    if (resp && resp.result == 2) {
-      logger.info("db connection looks good");
-    }
+    await sequelize.authenticate();
+    logger.info("database connection has been established successfully");
   } catch (error) {
-    logger.error("db connection failed");
-    logger.error(error.message);
-    process.exit(1);
+    logger.error("unable to connect to the database");
+    logger.error(error);
   }
 };
 
-const closeDB = () => {
-  db.close();
+export const closeDB = async () => {
+  try {
+    await sequelize.close();
+    logger.info("database connection has been closed");
+  } catch (error) {
+    logger.error("unable to close database connection");
+    logger.error(error);
+  }
 };
 
 export default {
-  query,
-  get,
-  run,
-
-  checkDB,
-  closeDB,
+  sequelize,
+  Sequelize,
 };
