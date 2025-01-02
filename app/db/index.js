@@ -5,15 +5,26 @@ import logger from "../logger.js";
 
 let sequelize = null;
 
+let sequelizeOptions = {
+  logging: false,
+};
+
+// show queries only in development mode
+if (config.env === "development") {
+  sequelizeOptions.logging = (msg) => logger.debug(msg);
+}
+
 if (config.sqlite.dbPath) {
   sequelize = new Sequelize({
     dialect: "sqlite",
     storage: config.sqlite.dbPath,
+    ...sequelizeOptions,
   });
 } else {
   // postgres
   sequelize = new Sequelize(
-    `postgres://${config.postgres.username}:${config.postgres.password}@${config.postgres.host}:${config.postgres.port}/${config.postgres.dbname}`
+    `postgres://${config.postgres.username}:${config.postgres.password}@${config.postgres.host}:${config.postgres.port}/${config.postgres.dbname}`,
+    { ...sequelizeOptions }
   );
 }
 
