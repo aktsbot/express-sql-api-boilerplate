@@ -32,6 +32,7 @@ const UserModel = (sequelize, DataTypes) => {
       status: {
         type: DataTypes.STRING,
         allowNull: false,
+        defaultValue: "active",
       },
       passwordResetCode: {
         type: DataTypes.STRING,

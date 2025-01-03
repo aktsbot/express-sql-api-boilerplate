@@ -24,6 +24,7 @@ module.exports = {
       status: {
         type: Sequelize.STRING,
         allowNull: false,
+        defaultValue: "active",
       },
       passwordResetCode: {
         type: Sequelize.STRING,

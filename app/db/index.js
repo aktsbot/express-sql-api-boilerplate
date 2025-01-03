@@ -49,8 +49,9 @@ fs.readdirSync(`${__dirname}/models`)
     );
   })
   .forEach(async (file) => {
-    const model = await import(path.join(__dirname, "models", file));
-    db[model.name] = model.default(sequelize, Sequelize.DataTypes);
+    const modelImport = await import(path.join(__dirname, "models", file));
+    const model = modelImport.default(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
   });
 
 // set associations for models
