@@ -26,12 +26,14 @@ if (config.env === "development") {
 }
 
 if (config.sqlite.dbPath) {
+  logger.info("app is going to use sqlite as database");
   sequelize = new Sequelize({
     dialect: "sqlite",
     storage: config.sqlite.dbPath,
     ...sequelizeOptions,
   });
 } else {
+  logger.info("app is going to use postgres as database");
   // postgres
   sequelize = new Sequelize(
     `postgres://${config.postgres.username}:${config.postgres.password}@${config.postgres.host}:${config.postgres.port}/${config.postgres.dbname}`,
