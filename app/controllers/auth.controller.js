@@ -46,9 +46,11 @@ export const loginUser = async (req, res, next) => {
     const errorMessage = "Invalid email or password";
 
     const { body } = req.xop;
-    const userPresent = await User.findUserByEmail({
-      email: body.email,
-      attributes: ["uuid", "password", "email", "full_name", "status"],
+    const userPresent = await db.User.findOne({
+      where: {
+        email: body.email,
+      },
+      attributes: ["uuid", "password", "email", "fullName", "status"],
     });
 
     if (!userPresent) {
@@ -58,10 +60,7 @@ export const loginUser = async (req, res, next) => {
       });
     }
 
-    const isPasswordValid = await isPasswordMatching({
-      password: body.password,
-      passwordHash: userPresent.password,
-    });
+    const isPasswordValid = await userPresent.isValidPassword(body.password);
 
     logger.debug(`password valid ${isPasswordValid}`);
 
@@ -79,18 +78,14 @@ export const loginUser = async (req, res, next) => {
       });
     }
 
-    const sessionPayload = {
+    const session = await db.Session.create({
       user: userPresent.uuid,
-      is_valid: 1,
-      uuid: getUuid(),
-    };
-    Session.createSessionForUser({
-      ...sessionPayload,
+      isValid: 1,
     });
 
     // token - {session: 'uuid'}
     const tokenPayload = {
-      session: sessionPayload.uuid,
+      session: session.uuid,
     };
 
     const accessToken = makeToken({
