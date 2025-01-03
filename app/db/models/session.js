@@ -4,6 +4,10 @@ const SessionModel = (sequelize, DataTypes) => {
   class Session extends Model {
     static associate(models) {
       // define association here
+      this.belongsTo(models.User, {
+        foreignKey: "user",
+        as: "User",
+      });
     }
   }
   Session.init(
@@ -30,6 +34,7 @@ const SessionModel = (sequelize, DataTypes) => {
       modelName: "Session",
     }
   );
+
   return Session;
 };
 

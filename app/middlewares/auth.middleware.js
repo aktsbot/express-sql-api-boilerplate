@@ -1,8 +1,7 @@
 import { verifyJWT } from "../jwt.js";
 import logger from "../logger.js";
 
-// import Session from "../db/session.js";
-const Session = null;
+import db from "../db/index.js";
 
 export const deserializeUser = (req, res, next) => {
   const accessToken = (req.headers.authorization || "").replace(
@@ -29,8 +28,6 @@ export const deserializeUser = (req, res, next) => {
 };
 
 export const requireUser = async (req, res, next) => {
-  logger.debug(res.locals);
-
   if (res.locals.accessTokenExpired) {
     return next({
       status: 403,
@@ -49,8 +46,14 @@ export const requireUser = async (req, res, next) => {
   }
 
   try {
-    const sessionInfo = await Session.findUserForValidSession({
-      session_uuid: session.session,
+    const sessionInfo = await db.Session.findOne({
+      where: {
+        uuid: session.session,
+      },
+      include: {
+        association: "User",
+        attributes: ["uuid", "fullName", "email"],
+      },
     });
 
     if (!sessionInfo) {
@@ -62,9 +65,9 @@ export const requireUser = async (req, res, next) => {
     }
 
     res.locals.user = {
-      uuid: sessionInfo.user_uuid,
-      full_name: sessionInfo.user_full_name,
-      email: sessionInfo.user_email,
+      uuid: sessionInfo.User.uuid,
+      full_name: sessionInfo.User.fullName,
+      email: sessionInfo.User.email,
     };
 
     return next();

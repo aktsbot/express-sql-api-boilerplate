@@ -41,25 +41,30 @@ if (config.sqlite.dbPath) {
   );
 }
 
-// set up our models
-fs.readdirSync(`${__dirname}/models`)
-  .filter((file) => {
+// We use this loadModels function to hook up the models and
+// set their association because of the await import()
+//
+async function loadModels() {
+  const modelFiles = fs.readdirSync(`${__dirname}/models`).filter((file) => {
     return (
       file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js"
     );
-  })
-  .forEach(async (file) => {
+  });
+
+  for (const file of modelFiles) {
     const modelImport = await import(path.join(__dirname, "models", file));
     const model = modelImport.default(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
-  });
-
-// set associations for models
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
   }
-});
+
+  // set associations for models
+  Object.keys(db).forEach((modelName) => {
+    if (db[modelName].associate) {
+      db[modelName].associate(db);
+    }
+  });
+}
+loadModels();
 
 export const connectDB = async () => {
   try {
