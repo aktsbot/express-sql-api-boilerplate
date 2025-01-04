@@ -142,33 +142,56 @@ export const makeNewTokens = async (req, res, next) => {
       });
     }
 
-    const sessionInfo = await Session.findUserForValidSession({
-      session_uuid: decoded.session,
+    if (!decoded) {
+      return next({
+        status: 403,
+        messageCode: "REFRESH_TOKEN_JWT_INVALID",
+      });
+    }
+
+    const sessionInfo = await db.Session.findOne({
+      where: {
+        uuid: decoded.session,
+        isValid: true,
+      },
+      attributes: ["uuid", "user"],
+      include: [
+        {
+          association: "User",
+          attributes: ["uuid", "fullName", "email", "status"],
+        },
+      ],
     });
 
     if (!sessionInfo) {
       return next({
         status: 403,
-        message:
-          "Session has expired or is no longer valid or user is not active",
+        message: "Session has expired or is no longer valid",
       });
     }
 
-    // remove old sessions
-    Session.deleteSessionsForUser({ user_uuid: sessionInfo.user_uuid });
+    if (sessionInfo.User.status !== "active") {
+      return next({
+        status: 403,
+        message: "Session is invalid as user is no longer active",
+      });
+    }
 
-    const sessionPayload = {
-      user: sessionInfo.user_uuid,
-      is_valid: 1,
-      uuid: getUuid(),
-    };
-    Session.createSessionForUser({
-      ...sessionPayload,
+    // remove old sessions when a new refresh token is issued
+    await db.Session.destroy({
+      where: {
+        user: sessionInfo.User.uuid,
+      },
+    });
+
+    const newSession = await db.Session.create({
+      user: sessionInfo.User.uuid,
+      isValid: true,
     });
 
     // token - {session: 'uuid'}
     const tokenPayload = {
-      session: sessionPayload.uuid,
+      session: newSession.uuid,
     };
 
     const newAccessToken = makeToken({

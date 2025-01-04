@@ -49,18 +49,25 @@ export const requireUser = async (req, res, next) => {
     const sessionInfo = await db.Session.findOne({
       where: {
         uuid: session.session,
+        isValid: true,
       },
       include: {
         association: "User",
-        attributes: ["uuid", "fullName", "email"],
+        attributes: ["uuid", "fullName", "email", "status"],
       },
     });
 
     if (!sessionInfo) {
       return next({
         status: 403,
-        message:
-          "Session has expired or is no longer valid or user might not be active",
+        message: "Session has expired or is no longer valid",
+      });
+    }
+
+    if (sessionInfo.User.status !== "active") {
+      return next({
+        status: 403,
+        message: "Session is invalid as user is no longer active",
       });
     }
 
