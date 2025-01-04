@@ -23,4 +23,8 @@ script:post-response {
     bru.setVar('refreshToken', res.body.refreshToken);
   }
   
+  const cookies = res.getHeader('set-cookie');
+  if(cookies) {
+    bru.setVar("cookie", cookies.join('; '));
+  }
 }

@@ -91,6 +91,12 @@ export const loginUser = async (req, res, next) => {
       type: "refreshToken",
     });
 
+    // on client sid, set token in browsers cookies
+    // this requires the frontend and backend to be on the same domain
+    // for example,
+    // http://foo.com - frontend
+    // http://foo.com/api - backend
+    res.setHeader("Set-Cookie", `x-refresh-token=${refreshToken}; HttpOnly`);
     return res.json({
       accessToken,
       refreshToken,
