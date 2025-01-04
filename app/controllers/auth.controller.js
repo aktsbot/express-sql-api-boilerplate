@@ -217,29 +217,30 @@ export const updatePassword = async (req, res, next) => {
     const user = { ...res.locals.user };
     const { body } = req.xop;
 
-    const userInfo = await User.findUserByUuid({
-      uuid: user.uuid,
+    const userInfo = await db.User.findOne({
+      where: {
+        uuid: user.uuid,
+      },
       attributes: ["uuid", "password"],
     });
 
-    if (
-      !(await isPasswordMatching({
-        password: body.oldPassword,
-        passwordHash: userInfo.password,
-      }))
-    ) {
+    if (!(await userInfo.isValidPassword(body.oldPassword))) {
       return next({
         status: 400,
         message: "Current password is invalid",
       });
     }
 
-    await User.updateUserPassword({
-      user_uuid: user.uuid,
-      password: body.newPassword,
-    });
+    userInfo.password = body.newPassword;
+    await userInfo.save();
 
-    Session.deleteSessionsForUser({ user_uuid: user.uuid });
+    // all sessions need to be nuked, as the user
+    // might be changing their password due to a concern
+    await db.Session.destroy({
+      where: {
+        user: userInfo.uuid,
+      },
+    });
 
     return res.send({
       message: "New password has been set. Please login again",
