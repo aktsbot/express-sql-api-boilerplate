@@ -259,7 +259,7 @@ export const forgotPassword = async (req, res, next) => {
     const message =
       "If the email address exists in our system, it should be getting an email shortly.";
     const { body } = req.xop;
-    const userPresent = await User.findUserByEmail({ email: body.email });
+    const userPresent = await db.User.findOne({ where: { email: body.email } });
 
     if (!userPresent) {
       return next({
@@ -268,23 +268,15 @@ export const forgotPassword = async (req, res, next) => {
       });
     }
 
-    let now = new Date();
-    let hrs = 2; // 2 hours
-
-    const payload = {
-      password_reset_code: getUuid(),
-      password_reset_expiry: now.setTime(now.getTime() + hrs * 60 * 60 * 1000),
-    };
-
-    User.setResetForUser({ user_uuid: userPresent.uuid, payload });
-
-    logger.debug(userPresent.uuid);
+    userPresent.generateReset();
+    await userPresent.save();
 
     await sendForgotPasswordEmail({
       to: body.email,
-      resetCode: payload.password_reset_code,
+      resetCode: userPresent.passwordResetCode,
       userId: userPresent.uuid,
     });
+
     return res.send({
       message,
       errors: [],
@@ -299,9 +291,10 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { body } = req.xop;
 
-    const userFound = await User.findUserByUuid({
-      uuid: body.userId,
-      attributes: ["uuid", "password_reset_code", "password_reset_expiry"],
+    const userFound = await db.User.findOne({
+      where: {
+        uuid: body.userId,
+      },
     });
 
     if (!userFound) {
@@ -312,30 +305,16 @@ export const resetPassword = async (req, res, next) => {
     }
 
     // check if code has expired?
-    if (
-      !isResetValid({
-        password_reset_code: userFound.password_reset_code,
-        password_reset_expiry: userFound.password_reset_expiry,
-        input_code: body.resetCode,
-      })
-    ) {
+    if (!userFound.isResetCodeValid(body.resetCode)) {
       return next({
         status: 400,
         message: "Password reset token is invalid or has been expired.",
       });
     }
 
-    User.updateUserPassword({
-      user_uuid: userFound.uuid,
-      password: body.password,
-    });
-    User.setResetForUser({
-      user_uuid: userFound.uuid,
-      payload: {
-        password_reset_code: "",
-        password_reset_expiry: "",
-      },
-    });
+    userFound.password = body.password;
+    userFound.clearReset();
+    await userFound.save();
 
     return res.send({
       message: "Password updated successfully",
