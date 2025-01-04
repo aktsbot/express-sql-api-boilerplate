@@ -1,10 +1,8 @@
+import { Op } from "sequelize";
+
 import logger from "../logger.js";
 
-// TODO:
-// import User from "../db/user.js";
-// import Session from "../db/session.js";
-const User = null;
-const Session = null;
+import db from "../db/index.js";
 
 export const updateUserInfo = async (req, res, next) => {
   try {
@@ -16,29 +14,43 @@ export const updateUserInfo = async (req, res, next) => {
     // is email available?
     let messageCode = "";
     if (body.email) {
-      const userPresentWithEmail = await User.isEmailUsedByAnotherUser({
-        email: body.email,
-        except_user_uuid: user.uuid,
+      const userPresentWithEmail = await db.User.count({
+        where: {
+          email: body.email,
+          [Op.not]: {
+            uuid: user.uuid,
+          },
+        },
       });
 
       logger.debug("email used? ");
       logger.debug(userPresentWithEmail);
 
-      if (userPresentWithEmail.email_used) {
+      if (userPresentWithEmail) {
         return next({
           status: 400,
           message: `Email ${body.email} is already in use`,
         });
       }
 
-      Session.deleteSessionsForUser({
-        user_uuid: user.uuid,
+      // email changed, so trigger a new login from client side.
+      await db.Session.destroy({
+        where: {
+          user: user.uuid,
+        },
       });
 
       messageCode = "RE_LOGIN";
     }
 
-    await User.updateUser({ user_uuid: user.uuid, payload: body });
+    await db.User.update(
+      { ...body },
+      {
+        where: {
+          uuid: user.uuid,
+        },
+      }
+    );
 
     return res.json({
       user: { uuid: user.uuid },

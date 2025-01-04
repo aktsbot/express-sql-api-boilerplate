@@ -1,13 +1,7 @@
 import logger from "../logger.js";
 
 import { makeToken, verifyJWT } from "../jwt.js";
-import { getUuid, isPasswordMatching, isResetValid } from "../utils.js";
 import { sendForgotPasswordEmail } from "../email.js";
-
-// TODO:
-const Session = null;
-// import User from "../db/user.js";
-// import Session from "../db/session.js";
 
 import db from "../db/index.js";
 
