@@ -3,6 +3,7 @@ export const validate = (schema) => (req, res, next) => {
     body: req.body,
     query: req.query,
     params: req.params,
+    cookies: req.cookies,
   });
 
   if (error) {

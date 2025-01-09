@@ -26,8 +26,11 @@ export const signupUserSchema = joi
 export const makeNewTokensSchema = joi
   .object()
   .keys({
+    cookies: joi.object().keys({
+      "x-refresh-token": joi.string(),
+    }),
     body: joi.object().keys({
-      refreshToken: joi.string().required(),
+      refreshToken: joi.string(),
     }),
   })
   .unknown(true);

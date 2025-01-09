@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import { connectDB, closeDB } from "./db/index.js";
@@ -20,6 +21,7 @@ app.use(
     origin: config.corsOrigins,
   })
 );
+app.use(cookieParser());
 app.use(express.json());
 app.use(deserializeUser);
 app.use(httpLogger());

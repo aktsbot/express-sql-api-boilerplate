@@ -8,7 +8,7 @@ export const makeJWT = ({ payload, tokenType, extraOptions }) => {
     privateKeyName = "refreshTokenPrivateKey";
   }
   const signingKey = Buffer.from(config[privateKeyName], "base64").toString(
-    "ascii",
+    "ascii"
   );
 
   return jwt.sign(payload, signingKey, {
@@ -24,7 +24,7 @@ export const verifyJWT = ({ token, tokenType }) => {
   }
 
   const publicKey = Buffer.from(config[publicKeyName], "base64").toString(
-    "ascii",
+    "ascii"
   );
 
   try {
@@ -41,6 +41,7 @@ export const verifyJWT = ({ token, tokenType }) => {
 
 export const makeToken = ({ payload, type }) => {
   let tokenType = "accessTokenPrivateKey";
+  // let expiresIn = "1m"; // for testing
   let expiresIn = "15m";
   if (type === "refreshToken") {
     tokenType = "refreshTokenPrivateKey";

@@ -119,8 +119,10 @@ export const makeNewTokens = async (req, res, next) => {
   // if a refresh token is sent, we return back a new access token and refresh token
   // and invalidate the old session
   try {
-    const { body } = req.xop;
-    const refreshToken = body.refreshToken;
+    const { body, cookies } = req.xop;
+    // in browser the refresh token comes from cookies
+    // in mobile apps and such we expect the request body to have it
+    const refreshToken = body.refreshToken || cookies["x-refresh-token"];
 
     if (!refreshToken) {
       return next({
@@ -203,6 +205,7 @@ export const makeNewTokens = async (req, res, next) => {
       type: "refreshToken",
     });
 
+    res.setHeader("Set-Cookie", `x-refresh-token=${newRefreshToken}; HttpOnly`);
     return res.send({
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
