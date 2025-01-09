@@ -73,7 +73,7 @@ export const requireUser = async (req, res, next) => {
 
     res.locals.user = {
       uuid: sessionInfo.User.uuid,
-      full_name: sessionInfo.User.fullName,
+      fullName: sessionInfo.User.fullName,
       email: sessionInfo.User.email,
     };
 
