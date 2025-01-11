@@ -61,6 +61,7 @@ export const requireUser = async (req, res, next) => {
       return next({
         status: 403,
         message: "Session has expired or is no longer valid",
+        messageCode: "RE_LOGIN",
       });
     }
 
@@ -68,6 +69,7 @@ export const requireUser = async (req, res, next) => {
       return next({
         status: 403,
         message: "Session is invalid as user is no longer active",
+        messageCode: "RE_LOGIN",
       });
     }
 
