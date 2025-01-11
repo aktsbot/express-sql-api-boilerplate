@@ -17,6 +17,20 @@ $ npm run dev
 
 - A [bruno](https://www.usebruno.com/) collection to interact with the api.
 - An nginx config to host this thing.
+- To start the app server on a VM use the provided `pm2.config.js` file.
+
+```sh
+$ npx pm2 start contrib/pm2.config.js
+```
+
+## Deployment
+
+There is a github action for deploying the app to a VM
+in the `.github` folder. This requires the presence of a `dev` branch and the
+VMs ssh details set in the GH project's settings > secrets > actions section.
+
+In the server, the `pm2.config.js` file would be in the root folder
+if deployed via the provided GH action.
 
 ## Access Tokens and Refresh Tokens
 
