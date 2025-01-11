@@ -13,7 +13,8 @@ export const updateUserInfo = async (req, res, next) => {
 
     // is email available?
     let messageCode = "";
-    if (body.email) {
+    let message = "Your info has been updated";
+    if (body.email && user.email !== body.email) {
       const userPresentWithEmail = await db.User.count({
         where: {
           email: body.email,
@@ -41,6 +42,7 @@ export const updateUserInfo = async (req, res, next) => {
       });
 
       messageCode = "RE_LOGIN";
+      message = "Your email was updated. Please login";
     }
 
     await db.User.update(
@@ -54,6 +56,7 @@ export const updateUserInfo = async (req, res, next) => {
 
     return res.json({
       user: { uuid: user.uuid },
+      message,
       messageCode,
     });
   } catch (error) {
