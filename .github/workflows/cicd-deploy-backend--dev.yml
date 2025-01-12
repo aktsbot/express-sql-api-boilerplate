@@ -20,8 +20,12 @@ jobs:
           npm install
           npm run build --if-present
 
+      # symlinks gets affected without the -y opt for zip
+      # useful for sequelize-cli
       - name: Zip artifact for deployment
-        run: zip node-app.zip ./contrib/pm2.config.js ./app ./node_modules -r
+        run: |
+          mkdir node-app && mv ./contrib/pm2.config.cjs package* .sequelizerc ./app ./node_modules node-app 
+          zip node-app.zip node-app -ryq
 
       - name: Upload built zip artifact
         uses: actions/upload-artifact@v4
@@ -54,19 +58,16 @@ jobs:
           port: ${{ secrets.VM_SSH_PORT }}
           script: |
             cd /opt/myapp/backend
-            echo "Stopping backend service and removing old build"
-            npx pm2 stop pm2.config.js
-            if [ -d dist ]
+            if [ -d node_modules ]
             then
-              rm -rf dist node_modules pm2.config.js
+              echo "Stopping backend service and removing old build"
+              npx pm2 stop pm2.config.cjs
+              rm -rf node_modules pm2.config.cjs
             fi
             cd distfiles
             unzip node-app.zip
-            mv dist ../
+            mv node-app/{.*,*} ../
             cd ..
-            mv distfiles/contrib/pm2.config.js .
-            mv distfiles/node_modules .
-            mv distfiles/app .
             rm -rf distfiles
-            npx pm2 restart pm2.config.js
+            npx pm2 restart pm2.config.cjs
             echo "All done"
