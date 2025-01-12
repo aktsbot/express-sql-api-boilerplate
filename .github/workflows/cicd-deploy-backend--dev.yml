@@ -56,13 +56,17 @@ jobs:
             cd /opt/myapp/backend
             echo "Stopping backend service and removing old build"
             npx pm2 stop pm2.config.js
-            rm -rf dist node_modules pm2.config.js
+            if [ -d dist ]
+            then
+              rm -rf dist node_modules pm2.config.js
+            fi
             cd distfiles
             unzip node-app.zip
             mv dist ../
             cd ..
             mv distfiles/contrib/pm2.config.js .
             mv distfiles/node_modules .
+            mv distfiles/app .
             rm -rf distfiles
             npx pm2 restart pm2.config.js
             echo "All done"
