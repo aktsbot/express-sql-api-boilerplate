@@ -62,7 +62,7 @@ jobs:
             then
               echo "Stopping backend service and removing old build"
               npx pm2 stop pm2.config.cjs
-              rm -rf node_modules pm2.config.cjs
+              rm -rf node_modules pm2.config.cjs app
             fi
             cd distfiles
             unzip node-app.zip
